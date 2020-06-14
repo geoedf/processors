@@ -70,7 +70,7 @@ jobs:
           fetch-depth: 0
       - name: Track Changes
         id: track-changes
-        uses: rkalyanapurdue/track-changes-docker-action@v8
+        uses: geoedf/track-changes-docker-action@v8
       - name: Output Folders
         run: echo "Connector plugins changed ${{ steps.track-changes.outputs.folders }}"
       - name: Loop and Build
