@@ -8,8 +8,6 @@ name: buildplugins
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -70,7 +68,7 @@ jobs:
           fetch-depth: 0
       - name: Track Changes
         id: track-changes
-        uses: geoedf/track-changes-docker-action@v8
+        uses: geoedf/track-changes-docker-action@v11
       - name: Output Folders
         run: echo "Connector plugins changed ${{ steps.track-changes.outputs.folders }}"
       - name: Loop and Build
