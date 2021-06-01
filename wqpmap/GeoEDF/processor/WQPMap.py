@@ -11,7 +11,7 @@ from geoedfframework.utils.GeoEDFError import GeoEDFError
    FAOSTAT data for preparing the SIMPLE database.
 """
 
-class SimpleDataClean(GeoEDFPlugin):
+class WQPMap(GeoEDFPlugin):
 
     # required inputs are:
     # (1) input directory where the CSV files from FAO have been stored
