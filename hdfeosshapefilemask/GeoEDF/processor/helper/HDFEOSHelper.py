@@ -25,7 +25,7 @@ def HDF_type(hdf_filepath):
         (ignore, extension) = os.path.splitext(hdf_filename)
         if extension == '.hdf':
             hdftype = 'hdf4'
-        elif extension == '.h5':
+        elif extension == '.h5' or extension == '.nc4':
             hdftype = 'hdf5'
         else:
             raise GeoEDFError('Could not determine HDF file type from file extension')
@@ -72,7 +72,7 @@ def HDF_subdataset_data(hdf_filepath,subdataset_substrs):
             raise GeoEDFError('Error retrieving subdatasets from HDF4 file %s' % hdf_filepath)
     else:
         hdf_file = h5py.File(hdf_filepath, mode='r')
-        # assume this follows the structure of HDF-EOS files where all subdatasets are in a "Geophysical_Data" group
+        # if this follows the structure of HDF-EOS files where all subdatasets are in a "Geophysical_Data" group
         if 'Geophysical_Data' in hdf_file.keys():
             dset_names = hdf_file['Geophysical_Data'].keys()
             # loop through input subdataset substrings
@@ -93,7 +93,23 @@ def HDF_subdataset_data(hdf_filepath,subdataset_substrs):
                             except:
                                 raise GeoEDFError('Error retrieving subdataset %s data from HDF file' % dset_name)
         else:
-            raise GeoEDFError('Cannot handle HDF5 files that do not follow the HDF-EOS standards')
+            # assume we just have subdatasets at top-level
+            dset_names = hdf_file.keys()
+            # loop through input subdataset substrings
+            for subdset_substr in subdataset_substrs:
+                # loop through subdatasets in HDF file
+                for dset_name in dset_names:
+                    # if substring matches
+                    if subdset_substr in dset_name:
+                        # if subdataset not processed yet
+                        if dset_name not in hdf_data:
+                            try:
+                                data = hdf_file[dset_name]
+                                hdf_data[dset_name] = dict()
+                                hdf_data[dset_name]['data'] = data[:]
+                                hdf_data[dset_name]['fillValue'] = data.fillvalue
+                            except:
+                                raise GeoEDFError('Error retrieving subdataset %s data from HDF file' % dset_name)
 
     return hdf_data
 
@@ -133,7 +149,7 @@ def HDF_proj_WKT(hdf_filepath):
             #return srs.ExportToWkt()
             raise GeoEDFError('Error determining the projection or unsupported projection')
     
-    else: # HDF5 file; only SMAP files in EASE Grid 2.0 are supported at the moment
+    else: # HDF5 file; only SMAP files in EASE Grid 2.0 and standard lat-lon grid are supported at the moment
         hdf_file = h5py.File(hdf_filepath, mode='r')
 
         # check to see if this is a EASE Grid 2.0 file
@@ -142,8 +158,10 @@ def HDF_proj_WKT(hdf_filepath):
             srs = osr.SpatialReference()
             srs.ImportFromProj4(ease_proj4)
             return srs.ExportToWkt()
-        else:
-            raise GeoEDFError('Error determining the projection or unsupported projection')
+        else: # assume EPSG 4326
+            srs = osr.SpatialReference()
+            srs.ImportFromEPSG(4326)
+            return srs.ExportToWkt()
 
 def HDF_corner_coords(hdf_filepath):
 
@@ -206,7 +224,7 @@ def HDF_corner_coords(hdf_filepath):
             #return (x0,y0,x1,y1)
             raise GeoEDFError('Error retrieving corner coordinates of HDF file')
 
-    else: # HDF5 file; only SMAP files in EASE Grid 2.0 are supported at the moment
+    else: # HDF5 file; only SMAP files in EASE Grid 2.0 or lat-lon grid are supported at the moment
         hdf_file = h5py.File(hdf_filepath, mode='r')
 
         # check to see if this is a EASE Grid 2.0 file
@@ -223,6 +241,7 @@ def HDF_corner_coords(hdf_filepath):
             return (x0, y0, x1, y1)
 
         else:
-            raise GeoEDFError('Only EASE Grid 2.0 HDF5 files are supported currently')
+            # assume lat-lon grid
+            return (-180.0, -90.0, 180.0, 90.0)
 
 
