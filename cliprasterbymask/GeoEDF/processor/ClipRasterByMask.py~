@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import zipfile
 
 from qgis.core import *
 from qgis.analysis import QgsNativeAlgorithms
@@ -66,37 +65,14 @@ class MergeArcGridRasters(GeoEDFPlugin):
 
         # identify rasters to be merged
         input_raster_list = []
-        zipfiles_list = []
         for file_or_dir in os.listdir(self.input_folder):
             file_or_dir_path = os.path.join(self.input_folder,file_or_dir)
             if os.path.isdir(file_or_dir_path) & file_or_dir.startswith("grd"):
                 input_raster_list.append(file_or_dir_path)
-            if os.path.isfile(file_or_dir_path) & (os.path.splitext(file_or_dir)[1] == '.zip'):
-                zipfiles_list.append(file_or_dir_path)
 
         # check if any rasters found
         if len(input_raster_list) == 0:
-            # it's possible that the ArcGrid files are in zip format
-            # unzip and try again
-            if len(zipfiles_list) > 0:
-                for arcgrid_zipfile in zipfiles_list:
-                    with zipfile.ZipFile(arcgrid_zipfile,"r") as zip_ref:
-                        zip_ref.extractall(self.input_folder)
-                    # check to see if a new directory has been created 
-                    # look for a "grd" folder in there
-                    zipfile_dirname = os.path.splitext(os.path.split(arcgrid_zipfile)[1])[0]
-                    zipfile_folder = '%s/%s' % (self.input_folder,zipfile_dirname)
-                    if os.path.isdir(zipfile_folder):
-                        # check for a grd folder in here
-                        for file_or_dir in os.listdir(zipfile_folder):
-                            file_or_dir_path = os.path.join(zipfile_folder,file_or_dir)
-                            if os.path.isdir(file_or_dir_path) & file_or_dir.startswith("grd"):
-                                input_raster_list.append(file_or_dir_path)
-                #if still no input files, error
-                if len(input_raster_list) == 0:
-                    raise GeoEDFError('No rasters found to merge in MergeArcGridRasters')
-            else: #no zipfiles either
-                raise GeoEDFError('No rasters found to merge in MergeArcGridRasters')
+            raise GeoEDFError('No rasters found to merge in MergeArcGridRasters')
 
         # now merge them
         try:
@@ -104,3 +80,25 @@ class MergeArcGridRasters(GeoEDFPlugin):
             processing.run("gdal:merge",{'INPUT':input_raster_list,'OUTPUT':output_raster})
         except:
             raise GeoEDFError('Error when merging input rasters in MergeArcGridRasters')
+        
+
+        
+        
+
+
+
+                    
+
+
+                    
+
+            
+            
+
+        
+
+
+
+
+
+
