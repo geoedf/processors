@@ -44,7 +44,7 @@ jobs:
 
       - name: Install Singularity
         env:
-          SINGULARITY_VERSION: 3.5.2
+          SINGULARITY_VERSION: 3.7.3
         run: |
           sudo mkdir -p /usr/local/var/singularity/mnt && \
           mkdir -p /tmp/src/github.com/sylabs && \
@@ -86,7 +86,7 @@ jobs:
               echo "Building processor plugin $folder"
               cd $dir/$folder
               if [ -f "${HPCCM_RECIPE}" ]; then
-                hpccm --recipe ${HPCCM_RECIPE} --format singularity --singularity-version=3.2 > ${SINGULARITY_RECIPE}
+                hpccm --recipe ${HPCCM_RECIPE} --format singularity --singularity-version=3.7 > ${SINGULARITY_RECIPE}
               else
                 echo "Container recipe ${HPCCM_RECIPE} not found."
               fi
