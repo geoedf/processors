@@ -84,6 +84,9 @@ class SimpleDataClean(GeoEDFPlugin):
         # 7. crop sets csv path
         # 8. livestock sets csv path
 
+        # dummy init to catch error in stdout
+        stdout = ''
+
         try:
             command = "Rscript"
             args = [str(self.start_year),str(self.end_year),self.fao_input_dir,self.target_path,self.regmaps_csv,self.regsets_csv,self.cropsets_csv,self.livestocksets_csv]
