@@ -96,7 +96,7 @@ class SimpleDataClean(GeoEDFPlugin):
             stdout = subprocess.check_output(cmd,universal_newlines=True)
 
         except CalledProcessError:
-            raise GeoEDFError('Error occurred when running SimpleDataClean processor: ',stdout)
+            raise GeoEDFError('Error occurred when running SimpleDataClean processor: %s' % stdout)
             
             
         
