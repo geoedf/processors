@@ -2,7 +2,7 @@
 # Preparing FAOSTAT data for creating SIMPLE database
 # Coded by UBaldos 07-05-2017
 # ----------------------------------------------------------------------------
-# This code creates country level data which will be aggregated later 
+# This code creates country level data which will be aggregated later
 # via a GEMPACK program
 #
 # =============================== #
@@ -53,9 +53,9 @@ livestock <- livestock[,1]
 # ======================== #
 # Data specific processing #
 # ======================== #
-# These codes do the following: 
-#   Read data, get subset data depending on year and variable of interest as well as 
-#   SIMPLE country and crop coverage. Then drop observations with NA values for each 
+# These codes do the following:
+#   Read data, get subset data depending on year and variable of interest as well as
+#   SIMPLE country and crop coverage. Then drop observations with NA values for each
 #   and finally write filtered data
 
 # 	Arable land and Permanent crops
@@ -68,11 +68,11 @@ qland_out = paste(temp_dir, "QLAND.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Item.Code==6620) 
-datatable2 <- subset(datatable2,  Element.Code==5110) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
+datatable2 <- subset(datatable2,  Item.Code==6620)
+datatable2 <- subset(datatable2,  Element.Code==5110)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
-datatable2 <- subset(datatable2, select=c("Area.Code", "Year.Code", "Value"))  
+datatable2 <- subset(datatable2, select=c("Area.Code", "Year.Code", "Value"))
 datatable2 <- datatable2[complete.cases(datatable2),]
 write.csv(datatable2,temp_file, row.names=FALSE )
 names(datatable2) <- c("CNTRY","YEAR","QLAND")
@@ -88,9 +88,9 @@ inc_out = paste(temp_dir, "INC.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Item.Code==22008) 
-datatable2 <- subset(datatable2,  Element.Code==6184) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
+datatable2 <- subset(datatable2,  Item.Code==22008)
+datatable2 <- subset(datatable2,  Element.Code==6184)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
 datatable2 <- subset(datatable2, select=c("Area.Code", "Year.Code", "Value"))
 datatable2 <- datatable2[complete.cases(datatable2),]
@@ -107,13 +107,13 @@ pop_out = paste(temp_dir, "POP.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Item.Code==3010) 
-datatable2 <- subset(datatable2,  Element.Code==511) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
+datatable2 <- subset(datatable2,  Item.Code==3010)
+datatable2 <- subset(datatable2,  Element.Code==511)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
 datatable2 <- subset(datatable2, select=c("Area.Code", "Year.Code", "Value"))
 datatable2 <- datatable2[complete.cases(datatable2),]
-colnames(datatable2) <- c("Area.Code", "Year.Code", "Value")          
+colnames(datatable2) <- c("Area.Code", "Year.Code", "Value")
 write.csv(datatable2,temp_file, row.names=FALSE )
 names(datatable2) <- c("CNTRY","YEAR","POP")
 write.csv(datatable2, pop_out, row.names=FALSE )
@@ -125,11 +125,11 @@ temp_file = paste(temp_dir, "00_cropprices.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Element.Code==5532) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
-datatable2 <- datatable2[datatable2$ Item.Code %in% crop,] 
+datatable2 <- subset(datatable2,  Element.Code==5532)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
+datatable2 <- datatable2[datatable2$ Item.Code %in% crop,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
-datatable2 <- subset(datatable2, select=c("Area.Code", "Item.Code", "Year.Code", "Value")) 
+datatable2 <- subset(datatable2, select=c("Area.Code", "Item.Code", "Year.Code", "Value"))
 datatable2 <- datatable2[complete.cases(datatable2),]
 write.csv(datatable2, temp_file, row.names=FALSE )
 
@@ -140,39 +140,38 @@ temp_file = paste(temp_dir, "00_liveprices.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Element.Code==5532) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
-datatable2 <- datatable2[datatable2$ Item.Code %in% livestock,] 
+datatable2 <- subset(datatable2,  Element.Code==5532)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
+datatable2 <- datatable2[datatable2$ Item.Code %in% livestock,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
 datatable2 <- datatable2[complete.cases(datatable2),]
 datatable2 <- subset(datatable2, select=c("Area.Code", "Item.Code", "Year.Code", "Value"))
 write.csv(datatable2, temp_file, row.names=FALSE )
 
-# Crop Production 
+# Crop Production
 
-input_file = paste(input_dir,"Production_Crops_E_All_Data_(Normalized).csv",sep="/")
+input_file = paste(input_dir,"Production_Crops_Livestock_E_All_Data_(Normalized).csv",sep="/")
 temp_file = paste(temp_dir, "00_cropprod.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Element.Code==5510) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
-datatable2 <- datatable2[datatable2$ Item.Code %in% crop,] 
+datatable2 <- subset(datatable2,  Element.Code==5510)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
+datatable2 <- datatable2[datatable2$ Item.Code %in% crop,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
 datatable2 <- datatable2[complete.cases(datatable2),]
 datatable2 <- subset(datatable2, select=c("Area.Code", "Item.Code", "Year.Code", "Value"))
 write.csv(datatable2, temp_file, row.names=FALSE )
 
-# Crop Harvested Area 
-
-input_file = paste(input_dir,"Production_Crops_E_All_Data_(Normalized).csv",sep="/")
+# Crop Harvested Area
+input_file = paste(input_dir,"Production_Crops_Livestock_E_All_Data_(Normalized).csv",sep="/")
 temp_file = paste(temp_dir, "00_cropharea.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Element.Code==5312) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
-datatable2 <- datatable2[datatable2$ Item.Code %in% crop,] 
+datatable2 <- subset(datatable2,  Element.Code==5312)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
+datatable2 <- datatable2[datatable2$ Item.Code %in% crop,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
 datatable2 <- datatable2[complete.cases(datatable2),]
 datatable2 <- subset(datatable2, select=c("Area.Code", "Item.Code", "Year.Code", "Value"))
@@ -180,14 +179,14 @@ write.csv(datatable2, temp_file, row.names=FALSE )
 
 # Livestock Production
 
-input_file = paste(input_dir,"Production_LivestockPrimary_E_All_Data_(Normalized).csv",sep="/")
+input_file = paste(input_dir,"Production_Crops_Livestock_E_All_Data_(Normalized).csv",sep="/")
 temp_file = paste(temp_dir, "00_liveprod.csv",sep="/")
 
 datatable  <- read.csv(input_file)
 datatable2 <- subset(datatable, select=c("Area.Code", "Item.Code", "Element.Code", "Year.Code", "Value"))
-datatable2 <- subset(datatable2,  Element.Code==5510) 
-datatable2 <- datatable2[datatable2$ Area.Code %in% country,] 
-datatable2 <- datatable2[datatable2$ Item.Code %in% livestock,] 
+datatable2 <- subset(datatable2,  Element.Code==5510)
+datatable2 <- datatable2[datatable2$ Area.Code %in% country,]
+datatable2 <- datatable2[datatable2$ Item.Code %in% livestock,]
 datatable2 <- datatable2[datatable2$Year %in% years,]
 datatable2 <- datatable2[complete.cases(datatable2),]
 datatable2 <- subset(datatable2, select=c("Area.Code", "Item.Code", "Year.Code", "Value"))
@@ -200,7 +199,7 @@ write.csv(datatable2, temp_file, row.names=FALSE )
 cropprice  <- read.csv(paste(temp_dir,"00_cropprices.csv",sep="/"))
 cropprod   <- read.csv(paste(temp_dir,"00_cropprod.csv",sep="/"))
 
-# ----- Merge production and price data then calculate value  
+# ----- Merge production and price data then calculate value
 cropvalue <- merge(cropprice, cropprod, by=c("Area.Code","Item.Code","Year.Code"), all = FALSE)
 names(cropvalue) <- c("Area.Code","Item.Code","Year.Code","Price","Prod")
 cropvalue$Value <- cropvalue$Price*cropvalue$Prod
@@ -220,7 +219,7 @@ wldcropprice_csv = paste(temp_dir,"00_wldcropprice.csv",sep="/")
 write.csv(subset(wldcrop, select=c("Item.Code","Year.Code","PriceW")), wldcropprice_csv, row.names=FALSE )
 
 wldcornprice_csv = paste(temp_dir,"00_wldcornprice.csv",sep="/")
-wldcornprice <- subset(wldcrop, Item.Code==56, select=c("Year.Code","PriceW")) 
+wldcornprice <- subset(wldcrop, Item.Code==56, select=c("Year.Code","PriceW"))
 write.csv(wldcornprice, wldcornprice_csv, row.names=FALSE )
 
 names(wldcornprice) <- c("Year.Code","CornPriceW")
@@ -282,10 +281,7 @@ write.csv(data_table2, paste(output_dir,"/",j,"_",i,".csv", sep=""), row.names=F
 
 # ======== #
 # Clean-up #
-# ======== #          
+# ======== #
 
 # Delete 'temp' folder
-unlink(temp_dir, recursive = TRUE)    
-
-          
-          
+unlink(temp_dir, recursive = TRUE)
