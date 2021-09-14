@@ -205,11 +205,7 @@ class SimplegTool(GeoEDFPlugin):
                 may be replaced with 
                 FILE INC_DAT   = /data/37393048/3/2005/INC.har"
         """
-        target_year_path = oHar files left in target_path will be returned to the users as final output.
-            Turns out that copying files using subprocess with wildcard causes 
-            either failure or shell execution concern.
-            This function copies all har files in subdirectory of the target path 
-            to the destination directory.s.path.join(self.har_input_dir,str(self.target_year)) 
+        target_year_path = os.path.join(self.har_input_dir,str(self.target_year)) 
         self.replace_string_in_file(cmf_path, "<YYYY_PATH>", target_year_path)
     
     
