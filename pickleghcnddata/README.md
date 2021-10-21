@@ -1,2 +1,2 @@
-# GHCND Input
-Connector Input plugin to download GHCND meterological datasets from NOAA NCDC repositories
+# Pickle GHCND Data
+Processor plugin that produces a pickle file out of rolling 7 and 30 day windows of GHCND data

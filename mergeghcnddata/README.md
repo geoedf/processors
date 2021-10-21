@@ -1,2 +1,2 @@
-# GHCND Input
-Connector Input plugin to download GHCND meterological datasets from NOAA NCDC repositories
+# Merge GHCND Data
+Processor plugin that merges per-station GHCND meteorological data into one csv per parameter
