@@ -5,7 +5,7 @@ Stage0 += baseimage(image='ubuntu:18.04')
 Stage0 += python(python3=True)
 
 # Install pip3 and the framework
-Stage0 += pip(ospackages=['python3-pip','python3-setuptools','python3-wheel libpython3-dev wget curl gcc g++ git'],packages=['geoedfframework==0.6.0'],pip='pip3')
+Stage0 += pip(ospackages=['python3-pip','python3-setuptools','python3-wheel libpython3-dev wget curl gcc g++ git openssh-client'],packages=['geoedfframework==0.6.0'],pip='pip3')
 
 # Update environment
 Stage1 += environment(variables={'PATH':'/usr/local/bin:$PATH','PYTHONPATH':'/usr/local/lib/python3.6/dist-packages:$PYTHONPATH'})
