@@ -1,2 +1,2 @@
-# FAO Input
-Connector Input plugin to download a specific dataset from the U.N. FAOSTAT website by parsing the FAO JSON data dictionary
+# SIMPLE DATA Clean
+Processor plugin to process and aggregate FAO CSV files
