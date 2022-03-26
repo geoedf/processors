@@ -7,6 +7,9 @@ Stage0 += python(python3=True)
 # Install pip3 and the framework
 Stage0 += pip(ospackages=['python3-pip','python3-setuptools','python3-wheel','r-base','curl','wget'],packages=['geoedfframework==0.6.0'],pip='pip3')
 
+# Install requirements for this plugin
+Stage1 += pip(packages=['numpy','pandas','geopandas','folium','rtree'],pip='pip3')
+
 # Update environment
 Stage1 += environment(variables={'PATH':'/usr/local/bin:$PATH','PYTHONPATH':'/usr/local/lib/python3.6/dist-packages:$PYTHONPATH'})
 
