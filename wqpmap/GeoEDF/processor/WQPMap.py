@@ -719,10 +719,10 @@ class WQPMap(GeoEDFPlugin):
 <p>Begin Date: {3}, End Date: {4} [Ignore dates for WQP properties: {5}]</p>
 <br/>
 <iframe src='wqpmap.html' name='iframe_map' style='height:600px;width:900px;' title='WQP Map'></iframe>
-<iframe src='' name='iframe_plot' style='height:300px;width:900px;' title='Timeseries Plots'></iframe>
 </body>
-</html>
-            """.format(NWIS_SITE,UM_DIST,DM_DIST,BEGIN_DATE,END_DATE,IGNORE_WQP_DATES) 
+</html>""".format(NWIS_SITE,UM_DIST,DM_DIST,BEGIN_DATE,END_DATE,IGNORE_WQP_DATES) 
+# TODO: include iFrame for Bokeh-generated time-series plots
+# <iframe src='' name='iframe_plot' style='height:300px;width:900px;' title='Timeseries Plots'></iframe>
             f.write(html_text)
             f.close()
         except:
