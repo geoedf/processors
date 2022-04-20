@@ -8,5 +8,4 @@ setup(name='wqxweb',
       author_email='smith1106@marshak.edu',
       license='MIT',
       packages=find_packages(),
-      install_requires=['dotenv'],
       zip_safe=False)
