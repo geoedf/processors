@@ -13,14 +13,11 @@ Stage0 += shell(commands=['python3 -m pip install -U pip setuptools'])
 # Install framework
 Stage0 += pip(packages=['geoedfframework==0.6.0'],pip='pip3')# Install pip3 and the framework
 
+# Install requirements for this plugin
+Stage1 += pip(packages=['wqxweblib'],pip='pip3')
+
 # Update environment
 Stage1 += environment(variables={'PATH':'/usr/local/bin:$PATH','PYTHONPATH':'/usr/local/lib/python3.6/dist-packages:$PYTHONPATH'})
-
-# Install WQXWebLib
-Stage1 += shell(commands=['python3 -m pip install wqxweblib'])
-
-# Install dotenv
-Stage1 += shell(commands=['python3 -m pip install python-dotenv'])
 
 # Copy files 
 Stage1 += copy(src='.',dest='/wqxweb')
