@@ -4,8 +4,14 @@ Stage0 += baseimage(image='ubuntu:18.04')
 # Python 3
 Stage0 += python(python3=True)
 
-# Install pip3 and the framework
-Stage0 += pip(ospackages=['python3-pip','python3-setuptools','python3-wheel','r-base','curl','wget'],packages=['geoedfframework==0.6.0'],pip='pip3')
+# Install pip3
+Stage0 += packages(ospackages=['python3-pip','python3-setuptools','python3-wheel','libpython3-dev', 'git', 'wget', 'curl', 'gcc', 'g++','openssh-client'])
+
+# Upgrade pip and setuptools
+Stage0 += shell(commands=['python3 -m pip install -U pip setuptools'])
+
+# Install framework
+Stage0 += pip(packages=['geoedfframework==0.6.0'],pip='pip3')
 
 # Install requirements for this plugin
 Stage1 += pip(packages=['numpy','pandas','geopandas','folium','rtree'],pip='pip3')

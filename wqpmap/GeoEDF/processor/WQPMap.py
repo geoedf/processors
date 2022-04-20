@@ -21,13 +21,17 @@ from .helper import GeomHelper, ColorHelper
 
 class WQPMap(GeoEDFPlugin):
 
-    # required inputs are:
-    # (1) NWIS (USGS) Station
+    # Required inputs:
+    #   nwis_site: NWIS (USGS) Station
 
-    # optional inputs can override the region, crop, and livestock sets
+    # Optional inputs:
+    #   um_dist: Upstream distance (km) along main stream from NWIS Station to traverse [50]
+    #   dm_dist: Downstream distance (km) to traverse [25]
+    #   begin_date: Beginning date (mm/dd/YYYY) to query properties [1/1/CurrentYear-3]
+    #   end_data: End date to query properties [CurrentDay]
+    #   ignore_wqp_dates: Option (True/False) to ignore above date for WQP properties [True]
 
     __required_params = ['nwis_site']
-
     __optional_params = ['um_dist','dm_dist','begin_date','end_date','ignore_wqp_dates']
 
     # we use just kwargs since this makes it easier to instantiate the object from the 
@@ -132,12 +136,11 @@ class WQPMap(GeoEDFPlugin):
         TNM_WS = "https://hydro.nationalmap.gov/arcgis/rest/services" # The National Map REST web services
         ARCGIS_WS = "http://server.arcgisonline.com/arcgis/rest/services" # ARCGIS Online REST web services
 
-        # Set Input (optional) and Output Directories
-        IN_DIR = "data/"+NWIS_SITE
-        OUT_DIR = IN_DIR+"/out"
-
-        # Create output directory if it does not already exist
-        #get_ipython().run_line_magic('mkdir', '-p {OUT_DIR}')
+        # Set Output Directory
+        if (self.target_path == None):
+            OUT_DIR = "."
+        else:
+            OUT_DIR = self.target_path
         
         try:
             # Get Lat/Lon coordinates of starting site (NWIS station)
