@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='investmodel',
-      version='0.1',
+      version='0.2',
       description='Processor for executing the various InVEST models',
       url='http://github.com/geoedf/processors',
       author='Rajesh Kalyanam',

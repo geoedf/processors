@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='simpledataclean',
-      version='0.1',
+      version='0.2',
       description='Processor for aggregating CSV files downloaded from FAOSTAT database',
       url='http://github.com/geoedf/simpledataclean',
       author='Rajesh Kalyanam',

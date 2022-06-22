@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='MergeCSVFiles',
-      version='0.1',
+      version='0.2',
       description='Processor plugin for merging a directory of CSV files into a single CSV file',
       url='http://github.com/geoedf/mergecsvfiles',
       author='Rajesh Kalyanam',

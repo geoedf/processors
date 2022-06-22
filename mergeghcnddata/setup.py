@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='mergeghcnddata',
-      version='0.1',
+      version='0.2',
       description='Processor for merging per-station, per GHCND parameter data CSVs',
       url='http://github.com/geoedf/processors',
       author='Rajesh Kalyanam',

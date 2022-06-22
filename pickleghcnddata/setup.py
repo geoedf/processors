@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='pickleghcnddata',
-      version='0.1',
+      version='0.2',
       description='Processor for creating a pickle file from rolling 30 and 7 day windows for various GHCND meteorological datasets',
       url='http://github.com/geoedf/processors',
       author='Rajesh Kalyanam',

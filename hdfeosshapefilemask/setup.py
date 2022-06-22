@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='hdfeosshapefilemask',
-      version='0.1',
+      version='0.2',
       description='Processor for masking a HDF5 or HDF4 file with a shapefile',
       url='http://github.com/geoedf/hdfeosshapefilemask',
       author='Rajesh Kalyanam',
