@@ -8,5 +8,5 @@ setup(name='polygonizedamfim',
       author_email='rkalyanapurdue@gmail.com',
       license='MIT',
       packages=find_packages(),
-      install_requires=['geopandas','shapely','xarray-spatial','rasterio','pygeos','rioxarray'],
+      install_requires=[],
       zip_safe=False)
