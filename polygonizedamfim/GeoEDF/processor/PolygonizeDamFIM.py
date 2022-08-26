@@ -6,6 +6,7 @@ from geoedfframework.GeoEDFPlugin import GeoEDFPlugin
 
 import subprocess
 import os
+from osgeo import gdal
 
 """ Module for implementing the PolygonizeDamFIM processor. This accepts a flood inundation map
     GeoTIFF as input and returns a shapefile that has been reclassified and reduced in scale.
@@ -46,9 +47,11 @@ class PolygonizeDamFIM(GeoEDFPlugin):
     def process(self):
         
         try:
-            geojson_out = "%s/damfim.json" % self.target_path
-            
-            subprocess.run(["gdal_polygonize.py",self.rasterfile,geojson_out,"-b","1","damfim","depth"])
+            filename = self.rasterfile.split("/")[-1].split(".")[-2]
+            geojson_out = "%s/damfim_%s.json" % (self.target_path,filename)
+            save_path = self.target_path +"/"+ filename + ".tiff"
+            subprocess.run(["gdalwarp","-r","near","-of","GTiff","-tr","0.001","0.001",self.rasterfile,save_path])
+            subprocess.run(["gdal_polygonize.py",save_path,geojson_out,"-b","1","damfim","depth"])
             
         except:
             raise GeoEDFError("Error occurred running gdal_polygonize to convert FIM Tiff %s" % os.path.split(self.rasterfile)[1])
