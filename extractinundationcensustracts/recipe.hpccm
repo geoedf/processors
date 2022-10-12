@@ -1,0 +1,12 @@
+Stage0 += baseimage(image='geoedf/framework')
+
+# Copy files
+Stage0 += copy(src='.',dest='/extractinundationcensustracts')
+
+# Install this package
+Stage0 += shell(commands=['cd /extractinundationcensustracts', 'pip3 install .'])
+
+# Make scripts executable
+Stage1 += shell(commands=['echo ". /opt/conda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT',
+'echo "conda activate geoedf" >> $SINGULARITY_ENVIRONMENT'])
+
