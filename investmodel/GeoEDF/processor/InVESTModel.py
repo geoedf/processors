@@ -1,18 +1,42 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import contextlib
 import importlib
 import logging
 import os
 import shutil
+import warnings
 import zipfile
 
 from geoedfframework.GeoEDFPlugin import GeoEDFPlugin
 from geoedfframework.utils.GeoEDFError import GeoEDFError
 from natcap.invest import datastack
+from natcap.invest import utils
 from natcap.invest.model_metadata import MODEL_METADATA
 
 LOGGER = logging.getLogger(logging.INFO)
+
+
+@contextlib.contextmanager
+def _set_temp_env_vars(workspace):
+    workspace = os.path.abspath(workspace)
+    old_variable_values = {}
+    for variable in ('TMPDIR', 'TEMP', 'TMP'):
+        try:
+            old_variable_values[variable] = os.environ[variable]
+        except KeyError:
+            pass
+        os.environ[variable] = workspace
+
+    yield
+
+    for varname, old_value in old_variable_values.items():
+        if os.environ[varname] != workspace:
+            warnings.warn(
+                f"Environment variable {varname} changed value during "
+                "execution of an InVEST model; overwriting.")
+        os.environ[varname] = old_value
 
 
 class InVESTModel(GeoEDFPlugin):
@@ -78,12 +102,22 @@ class InVESTModel(GeoEDFPlugin):
         os.chdir(os.path.join(self.target_path, model_dirname))
 
         # workspace_dir
-        self.kwargs['workspace_dir'] = os.getcwd()
+        workspace = os.getcwd()
+        self.kwargs['workspace_dir'] = workspace
 
         # use importlib to import the necessary model
         model_mname = MODEL_METADATA[self.model].pyname
         model_module = importlib.import_module(model_mname)
-        model_module.execute(self.kwargs)
+
+        # prepare_workspace will:
+        #  * capture GDAL logging
+        #  * write to a named, timestamped logfile in the workspace
+        #  * create a new temp directory within the workspace
+        with utils.prepare_workspace(
+                workspace, MODEL_METADATA[self.model].model_title,
+                logging_level=logging.INFO):
+            with _set_temp_env_vars(workspace):
+                model_module.execute(self.kwargs)
 
         # zip up folder again to return
         source_dir = os.path.join(self.target_path, model_dirname)
