@@ -2,12 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import importlib
+import logging
 import os
 import shutil
 import zipfile
 
 from geoedfframework.GeoEDFPlugin import GeoEDFPlugin
 from geoedfframework.utils.GeoEDFError import GeoEDFError
+from natcap.invest import datastack
+from natcap.invest.model_metadata import MODEL_METADATA
+
+LOGGER = logging.getLogger(logging.INFO)
 
 
 class InVESTModel(GeoEDFPlugin):
@@ -76,7 +81,7 @@ class InVESTModel(GeoEDFPlugin):
         self.kwargs['workspace_dir'] = os.getcwd()
 
         # use importlib to import the necessary model
-        model_mname = 'natcap.invest.%s.%s' % (self.model, self.model)
+        model_mname = MODEL_METADATA[self.model].pyname
         model_module = importlib.import_module(model_mname)
         model_module.execute(self.kwargs)
 
