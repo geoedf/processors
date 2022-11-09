@@ -7,8 +7,8 @@ import logging
 import os
 import shutil
 import warnings
-import zipfile
 
+import requests
 from geoedfframework.GeoEDFPlugin import GeoEDFPlugin
 from geoedfframework.utils.GeoEDFError import GeoEDFError
 from natcap.invest import datastack
@@ -16,6 +16,7 @@ from natcap.invest import utils
 from natcap.invest.model_metadata import MODEL_METADATA
 
 LOGGER = logging.getLogger(logging.INFO)
+VALID_MODEL_NAMES = sorted(MODEL_METADATA.keys())
 
 
 @contextlib.contextmanager
@@ -40,25 +41,37 @@ def _set_temp_env_vars(workspace):
 
 
 class InVESTModel(GeoEDFPlugin):
-    """ Module for executing any InVEST model using the model API entrypoints
+    """Processor for executing any InVEST model using the model API.
+
+    An InVEST model requires additional parameters to run.  These parameters
+    may be provided as either a mapping of arguments or as a path to a
+    datastack.
+
+    The model name must always be provided, where the model name matches those
+    model names defined in ``natcap.invest.model_metadata``.
     """
 
-    __optional_params = []
-    __required_params = ['model', 'model_input']
+    __optional_params = ['datastack', 'args']
+    __required_params = ['model']
 
     # we use just kwargs since this makes it easier to instantiate the object
     # from the GeoEDFProcessor class
     def __init__(self, **kwargs):
-
-        # list to hold all parameter names
-        self.provided_params = self.__required_params + self.__optional_params
-
         # check that all required params have been provided
         for param in self.__required_params:
             if param not in kwargs:
                 raise GeoEDFError(
                     f'Required parameter {param} for InVESTModel '
-                    'not provided')
+                    'not provided.')
+
+        if kwargs['model'] not in VALID_MODEL_NAMES:
+            raise GeoEDFError(
+                f"Model name invalid; must be one of {VALID_MODEL_NAMES}")
+
+        if (set(self.__optional_params).issubset(set(kwargs.keys())) or not
+                set(self.__optional_params).intersection(set(kwargs.keys()))):
+            raise GeoEDFError(
+                "Either 'datastack' or 'args' must be defined, but not both")
 
         # set all required parameters
         for key in self.__required_params:
@@ -76,30 +89,47 @@ class InVESTModel(GeoEDFPlugin):
     # the process method that executes the specific InVEST model with a
     # dictionary of args constructed from kwargs
     def process(self):
+        if self.datastack:
+            # download the datastack if it's remote.
+            if self.datastack.startswith('http'):
+                local_datastack = os.path.join(
+                    self.target_path, 'datastack.tar.gz')
+                r = requests.get(
+                    self.datastack, allow_redirects=True, stream=True)
+                with open(local_datastack, 'wb') as file:
+                    for chunk in r.iter_content(chunk_size=1024):
+                        if chunk:
+                            file.write(chunk)
 
-        # construct args from kwargs by deleting the required and optional
-        # params
-        for arg in self.provided_params:
-            self.kwargs.pop(arg)
+            # If the datastack is somewhere on the local filesystem but not in
+            # the target directory, copy it into the target directory.
+            elif os.path.commonprefix(
+                    [self.target_path, self.datastack]) != self.target_path:
+                shutil.copy(self.datastack, self.target_path)
+                local_datastack = os.path.join(
+                    self.target_path, os.path.basename(self.datastack))
 
-        # assume for now that input is always a zip file
-        # copy file to processor output dir and then unzip
-        shutil.copy(self.model_input, self.target_path)
+            # Otherwise, the local datastack should already be in the target
+            # directory.
+            else:
+                local_datastack = self.datastack
 
-        # determine input filename
-        model_input_filename = os.path.split(self.model_input)[1]
-        zipfile_path = os.path.join(self.targeT_path, model_input_filename)
-        with zipfile.ZipFile(zipfile_path, 'r') as zip_ref:
-            zip_ref.extractall(self.target_path)
+            ds_type, _ = datastack.get_datastack_info(local_datastack)
 
-        # delete zip file
-        os.remove(zipfile_path)
+            # Unzip a tar.gz archive if the datastack is an archive.
+            if ds_type == 'archive':
+                ds_info = datastack.extract_datastack_archive(
+                    local_datastack, self.target_path)
+                os.remove(local_datastack)
+                model_args = ds_info.args
+            else:
+                ds_info = datastack.extract_parameter_set(local_datastack)
+                model_args = ds_info.args
 
-        # model dirname
-        model_dirname = os.path.splitext(model_input_filename)[0]
-
-        # chdir to right path
-        os.chdir(os.path.join(self.target_path, model_dirname))
+        # If the user didn't provide a datastack, they provided a direct
+        # dictionary of arguments, so use them verbatim.
+        else:
+            model_args = self.args
 
         # workspace_dir
         workspace = os.getcwd()
@@ -117,9 +147,8 @@ class InVESTModel(GeoEDFPlugin):
                 workspace, MODEL_METADATA[self.model].model_title,
                 logging_level=logging.INFO):
             with _set_temp_env_vars(workspace):
-                model_module.execute(self.kwargs)
+                model_module.execute(model_args)
 
         # zip up folder again to return
-        source_dir = os.path.join(self.target_path, model_dirname)
         shutil.make_archive(
-            f'{source_dir}.zip', 'zip', source_dir)
+            'workspace.zip', 'zip', workspace)
