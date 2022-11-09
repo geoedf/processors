@@ -171,5 +171,7 @@ class InVESTModel(GeoEDFPlugin):
 
 
 class InVESTProcessorTests(unittest.TestCase):
-    def test_model(self):
-        pass
+    def test_invalid_name(self):
+        """Test that an invalid model name raises GeoEDFError."""
+        with self.assertRaises(GeoEDFError):
+            plugin = InVESTModel(model='bad model name')
