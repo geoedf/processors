@@ -6,9 +6,13 @@ import importlib
 import logging
 import os
 import shutil
+import tempfile
+import textwrap
 import unittest
 import warnings
 
+import numpy
+import pygeoprocessing
 import requests
 from geoedfframework.GeoEDFPlugin import GeoEDFPlugin
 from geoedfframework.utils.GeoEDFError import GeoEDFError
@@ -16,8 +20,8 @@ from natcap.invest import datastack
 from natcap.invest import model_metadata
 from natcap.invest import utils
 from natcap.invest.model_metadata import MODEL_METADATA
+from osgeo import osr
 
-logging.getLogger().addHandler(logging.NullHandler)  # avoid no-handler warning
 LOGGER = logging.getLogger(__name__)
 VALID_MODEL_NAMES = sorted(MODEL_METADATA.keys())
 
@@ -101,6 +105,12 @@ class InVESTModel(GeoEDFPlugin):
     # the process method that executes the specific InVEST model with a
     # dictionary of args constructed from kwargs
     def process(self):
+        if not hasattr(self, 'target_path'):
+            raise GeoEDFError("Did you run Processor.set_output_path(path)?")
+
+        if not os.path.isdir(self.target_path):
+            os.makedirs(self.target_path)
+
         if self.datastack:
             # download the datastack if it's remote.
             if self.datastack.startswith('http'):
@@ -131,10 +141,10 @@ class InVESTModel(GeoEDFPlugin):
 
             # Unzip a tar.gz archive if the datastack is an archive.
             if ds_type == 'archive':
-                ds_info = datastack.extract_datastack_archive(
+                LOGGER.info(f"Extracting datastack to {self.target_path}")
+                model_args = datastack.extract_datastack_archive(
                     local_datastack, self.target_path)
                 os.remove(local_datastack)
-                model_args = ds_info.args
 
             # Assume the user provided a datastack parameter set instead, which
             # can just be loaded directly.
@@ -148,14 +158,15 @@ class InVESTModel(GeoEDFPlugin):
             model_args = self.args
 
         # workspace_dir
-        workspace = os.getcwd()
-        self.kwargs['workspace_dir'] = workspace
+        workspace = os.path.join(os.getcwd(), 'workspace')
+        model_args['workspace_dir'] = workspace
 
         # use importlib to import the necessary model
         model_mname = MODEL_METADATA[self.model].pyname
         model_module = importlib.import_module(model_mname)
 
         # Validate the user's defined inputs
+        LOGGER.info("Validating args")
         validation_warnings = model_module.validate(model_args)
         if validation_warnings:
             raise GeoEDFError(
@@ -165,14 +176,21 @@ class InVESTModel(GeoEDFPlugin):
         #  * capture GDAL logging
         #  * write to a named, timestamped logfile in the workspace
         #  * create a new temp directory within the workspace
+        LOGGER.info("Setting up logging for the model run")
         with utils.prepare_workspace(
                 workspace, MODEL_METADATA[self.model].model_title,
                 logging_level=logging.INFO):
             with _set_temp_env_vars(workspace):
+                LOGGER.info(f"Running {self.model}")
                 model_module.execute(model_args)
 
-        # zip up folder again to return
-        shutil.make_archive('workspace.zip', 'zip', workspace)
+        # zip up folder again to return.
+        # NOTE: be careful to not have the target zipfile be within the
+        # directory we're zipping.
+        LOGGER.info("Model run completed; archiving outputs")
+        shutil.make_archive(os.path.join(self.target_path, 'workspace.zip'),
+                            'zip', workspace)
+        LOGGER.info("InVEST model complete")
 
 
 class InVESTProcessorSetupTests(unittest.TestCase):
@@ -215,5 +233,42 @@ class InVESTProcessorSetupTests(unittest.TestCase):
 
 
 class InVESTProcessorTests(unittest.TestCase):
+    def setUp(self):
+        self.workspace = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.workspace)
+
     def test_execution_on_demo_model(self):
-        pass
+        # This is an easy model to construct sample data for
+        from natcap.invest import carbon
+        args = {
+            'workspace_dir': os.path.join(self.workspace, 'workspace'),
+            'lulc_cur_path': os.path.join(self.workspace, 'cur.tif'),
+            'carbon_pools_path': os.path.join(self.workspace, 'pools.csv'),
+        }
+
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(32731)  # WGS84 / UTM zone 31s
+        pygeoprocessing.numpy_array_to_raster(
+            numpy.array([[1, 2, 3]], dtype=numpy.int8), 255, (2, -2), (2, -2),
+            srs.ExportToWkt(), args['lulc_cur_path'])
+
+        with open(args['carbon_pools_path'], 'w') as pools_csv:
+            pools_csv.write(textwrap.dedent(
+                """\
+                lucode,c_above,c_below,c_soil,c_dead
+                1,1,1,1,1
+                2,2,2,2,2
+                3,3,3,3,3"""
+            ))
+
+        model_name = 'carbon'
+        datastack_path = os.path.join(self.workspace, 'datastack.tar.gz')
+        datastack.build_datastack_archive(
+            args, f'natcap.invest.{model_name}', datastack_path)
+
+        processor = InVESTModel(model=model_name, datastack=datastack_path)
+        processor.set_output_path(
+            os.path.join(self.workspace, 'processor_output'))
+        processor.process()
