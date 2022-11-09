@@ -13,6 +13,7 @@ import requests
 from geoedfframework.GeoEDFPlugin import GeoEDFPlugin
 from geoedfframework.utils.GeoEDFError import GeoEDFError
 from natcap.invest import datastack
+from natcap.invest import model_metadata
 from natcap.invest import utils
 from natcap.invest.model_metadata import MODEL_METADATA
 
@@ -63,6 +64,11 @@ class InVESTModel(GeoEDFPlugin):
     # we use just kwargs since this makes it easier to instantiate the object
     # from the GeoEDFProcessor class
     def __init__(self, **kwargs):
+        # Upstream GeoEDFPlugin requires self.provided_params is present.
+        self.provided_params = sorted(
+            set(self.__required_params + self.__optional_params).intersection(
+                set(kwargs.keys())))
+
         # check that all required params have been provided
         for param in self.__required_params:
             if param not in kwargs:
@@ -166,11 +172,10 @@ class InVESTModel(GeoEDFPlugin):
                 model_module.execute(model_args)
 
         # zip up folder again to return
-        shutil.make_archive(
-            'workspace.zip', 'zip', workspace)
+        shutil.make_archive('workspace.zip', 'zip', workspace)
 
 
-class InVESTProcessorTests(unittest.TestCase):
+class InVESTProcessorSetupTests(unittest.TestCase):
     def test_invalid_name(self):
         """Test that an invalid model name raises GeoEDFError."""
         with self.assertRaises(GeoEDFError):
@@ -179,7 +184,7 @@ class InVESTProcessorTests(unittest.TestCase):
     def test_invalid_model_args_provision(self):
         """Test that invalid model args raise an error."""
         model_name = 'annual_water_yield'
-        assert model_name in MODEL_METADATA
+        self.assertIn(model_name, MODEL_METADATA)
 
         # Model name is valid, but parameters were not provided.
         with self.assertRaises(GeoEDFError):
@@ -190,3 +195,25 @@ class InVESTProcessorTests(unittest.TestCase):
             _ = InVESTModel(model=model_name,
                             args={"a": 1},
                             datastack="somethingsomething.tar.gz")
+
+    def test_valid_model_args_provision(self):
+        """Test that valid model args produce the correct attributes."""
+        model_name = 'annual_water_yield'
+        self.assertIn(model_name, MODEL_METADATA)
+
+        sample_args_dict = {'a': 1}
+        model = InVESTModel(model=model_name, args=sample_args_dict)
+        self.assertEqual(model.args, sample_args_dict)
+        self.assertEqual(model.datastack, None)
+        self.assertEqual(model.model, model_name)
+
+        sample_datastack = 'foo.tar.gz'
+        model = InVESTModel(model=model_name, datastack=sample_datastack)
+        self.assertEqual(model.args, None)
+        self.assertEqual(model.datastack, sample_datastack)
+        self.assertEqual(model.model, model_name)
+
+
+class InVESTProcessorTests(unittest.TestCase):
+    def test_execution_on_demo_model(self):
+        pass
