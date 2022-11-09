@@ -6,6 +6,7 @@ import importlib
 import logging
 import os
 import shutil
+import unittest
 import warnings
 
 import requests
@@ -16,7 +17,7 @@ from natcap.invest import utils
 from natcap.invest.model_metadata import MODEL_METADATA
 
 logging.getLogger().addHandler(logging.NullHandler)  # avoid no-handler warning
-LOGGER = logging.getLogger(logging.INFO)
+LOGGER = logging.getLogger(__name__)
 VALID_MODEL_NAMES = sorted(MODEL_METADATA.keys())
 
 
@@ -45,8 +46,12 @@ class InVESTModel(GeoEDFPlugin):
     """Processor for executing any InVEST model using the model API.
 
     An InVEST model requires additional parameters to run.  These parameters
-    may be provided as either a mapping of arguments or as a path to a
-    datastack.
+    may be provided as either:
+
+        * a mapping of arguments (under the "args" key)
+        * a path to a datastack archive or parameter set (under the "datastack"
+            key).  This may be hosted on a remote server, accessible via
+            http(s).
 
     The model name must always be provided, where the model name matches those
     model names defined in ``natcap.invest.model_metadata``.
@@ -115,6 +120,7 @@ class InVESTModel(GeoEDFPlugin):
             else:
                 local_datastack = self.datastack
 
+            # Figure out which type of datastack the user provided.
             ds_type, _ = datastack.get_datastack_info(local_datastack)
 
             # Unzip a tar.gz archive if the datastack is an archive.
@@ -123,6 +129,9 @@ class InVESTModel(GeoEDFPlugin):
                     local_datastack, self.target_path)
                 os.remove(local_datastack)
                 model_args = ds_info.args
+
+            # Assume the user provided a datastack parameter set instead, which
+            # can just be loaded directly.
             else:
                 ds_info = datastack.extract_parameter_set(local_datastack)
                 model_args = ds_info.args
@@ -159,3 +168,8 @@ class InVESTModel(GeoEDFPlugin):
         # zip up folder again to return
         shutil.make_archive(
             'workspace.zip', 'zip', workspace)
+
+
+class InVESTProcessorTests(unittest.TestCase):
+    def test_model(self):
+        pass
