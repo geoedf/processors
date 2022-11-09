@@ -15,6 +15,7 @@ from natcap.invest import datastack
 from natcap.invest import utils
 from natcap.invest.model_metadata import MODEL_METADATA
 
+logging.getLogger().addHandler(logging.NullHandler)  # avoid no-handler warning
 LOGGER = logging.getLogger(logging.INFO)
 VALID_MODEL_NAMES = sorted(MODEL_METADATA.keys())
 
@@ -138,6 +139,12 @@ class InVESTModel(GeoEDFPlugin):
         # use importlib to import the necessary model
         model_mname = MODEL_METADATA[self.model].pyname
         model_module = importlib.import_module(model_mname)
+
+        # Validate the user's defined inputs
+        validation_warnings = model_module.validate(model_args)
+        if validation_warnings:
+            raise GeoEDFError(
+                f"Model inputs failed validation: {validation_warnings}")
 
         # prepare_workspace will:
         #  * capture GDAL logging
