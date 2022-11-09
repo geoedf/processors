@@ -174,4 +174,19 @@ class InVESTProcessorTests(unittest.TestCase):
     def test_invalid_name(self):
         """Test that an invalid model name raises GeoEDFError."""
         with self.assertRaises(GeoEDFError):
-            plugin = InVESTModel(model='bad model name')
+            _ = InVESTModel(model='bad model name')
+
+    def test_invalid_model_args_provision(self):
+        """Test that invalid model args raise an error."""
+        model_name = 'annual_water_yield'
+        assert model_name in MODEL_METADATA
+
+        # Model name is valid, but parameters were not provided.
+        with self.assertRaises(GeoEDFError):
+            _ = InVESTModel(model=model_name)
+
+        # Both args and datastack provided when only one may be.
+        with self.assertRaises(GeoEDFError):
+            _ = InVESTModel(model=model_name,
+                            args={"a": 1},
+                            datastack="somethingsomething.tar.gz")
