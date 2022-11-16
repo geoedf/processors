@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='subsetforcingdata',
-      version='0.1',
+      version='0.2',
       description='Processor for subsetting AORC forcing data for given HUC region and date range',
       url='http://github.com/geoedf/subsetaorcforcingdata',
       author='Rajesh Kalyanam',
