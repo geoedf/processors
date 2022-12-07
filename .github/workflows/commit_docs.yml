@@ -36,7 +36,7 @@ jobs:
           echo "=======================">> processors-list.rst
           echo -e "">> processors-list.rst
           echo ".. toctree::">> processors-list.rst
-          echo -e "   :maxdepth: 2">> processors-list.rst
+          echo -e "   :maxdepth: 1">> processors-list.rst
           echo -e "">> processors-list.rst
           while read line; do echo '   '$line>> processors-list.rst; done < ./../processors_list.txt
           rm ./../processors_list.txt
